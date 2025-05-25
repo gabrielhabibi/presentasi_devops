@@ -4,13 +4,11 @@ node {
     }
 
     stage('Build') {
-        // Gunakan docker image PHP 8.1 dengan composer
-        docker.image('php:8.1-cli').inside('-u root') {
+        // Gunakan image composer resmi dengan PHP 8.1
+        docker.image('composer:2.6').inside('-u root') {
             sh '''
             rm -f composer.lock
-            apt-get update && apt-get install -y unzip git curl
-            curl -sS https://getcomposer.org/installer | php
-            php composer.phar install
+            composer install --no-interaction --prefer-dist --optimize-autoloader
             '''
         }
     }
@@ -18,7 +16,7 @@ node {
     stage('Test') {
         docker.image('ubuntu').inside('-u root') {
             sh 'echo "Ini adalah test"'
-            // Bisa kamu tambah testing command disini
+            // Tambahkan testing command di sini jika perlu
         }
     }
 
