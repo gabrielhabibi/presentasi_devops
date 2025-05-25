@@ -21,8 +21,9 @@ node {
     }
 
     stage('Deploy to Production') {
-        docker.image('agung3wi/alpine-rsync:1.1').inside('-u root') {
-            sshagent (credentials: ['ssh-prod']) {
+    docker.image('agung3wi/alpine-rsync:1.1').inside('-u root') {
+        withEnv(["PROD_HOST=your.production.server"]) {
+            sshagent (credentials: ['github-ssh-naga']) {
                 sh '''
                 mkdir -p ~/.ssh
                 ssh-keyscan -H "$PROD_HOST" >> ~/.ssh/known_hosts
