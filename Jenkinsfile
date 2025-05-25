@@ -1,47 +1,36 @@
-pipeline {
-  agent any
-
-  environment {
-    PROD_HOST = "157.245.59.181"  // Ganti sesuai IP server kamu
-    DEPLOY_USER = "root"          // User ssh di server kamu (kalau root sesuai request)
-  }
-
-  stages {
+node {
     stage('Checkout') {
-      steps {
         checkout scm
-      }
     }
 
     stage('Build') {
-      steps {
-        docker.image('composer:2.5-php8.2').inside('-u root') {
-          sh 'rm -f composer.lock'
-          sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
+        // Gunakan docker image PHP 8.1 dengan composer
+        docker.image('php:8.1-cli').inside('-u root') {
+            sh '''
+            rm -f composer.lock
+            apt-get update && apt-get install -y unzip git curl
+            curl -sS https://getcomposer.org/installer | php
+            php composer.phar install
+            '''
         }
-      }
     }
 
-    stage('Testing') {
-      steps {
+    stage('Test') {
         docker.image('ubuntu').inside('-u root') {
-          sh 'echo "Ini adalah test"'
+            sh 'echo "Ini adalah test"'
+            // Bisa kamu tambah testing command disini
         }
-      }
     }
 
     stage('Deploy to Production') {
-      steps {
         docker.image('agung3wi/alpine-rsync:1.1').inside('-u root') {
-          sshagent (credentials: ['github-ssh-naga']) {
-            sh '''
-              mkdir -p ~/.ssh
-              ssh-keyscan -H $PROD_HOST >> ~/.ssh/known_hosts
-              rsync -rav --delete ./laravel/ $DEPLOY_USER@$PROD_HOST:/root/prod.kelasdevops.xyz/ --exclude=.env --exclude=storage --exclude=.git
-            '''
-          }
+            sshagent (credentials: ['ssh-prod']) {
+                sh '''
+                mkdir -p ~/.ssh
+                ssh-keyscan -H "$PROD_HOST" >> ~/.ssh/known_hosts
+                rsync -rav --delete ./laravel/ root@$PROD_HOST:/root/prod.kelasdevops.xyz/ --exclude=.env --exclude=storage --exclude=.git
+                '''
+            }
         }
-      }
     }
-  }
 }
