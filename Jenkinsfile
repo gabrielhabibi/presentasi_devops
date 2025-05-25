@@ -22,7 +22,7 @@ node {
 
     stage('Deploy to Production') {
         docker.image('agung3wi/alpine-rsync:1.1').inside('-u root') {
-            withEnv(["PROD_HOST=your.production.server"]) {
+            withEnv(["PROD_HOST=157.245.59.181"]) {
                 sshagent (credentials: ['github-ssh-naga']) {
                     sh '''
                     mkdir -p ~/.ssh
@@ -31,6 +31,7 @@ node {
                     '''
                 }
             }
+
         }
     } // <-- tutup stage Deploy
 
