@@ -1,29 +1,28 @@
-node {
-  env.PROD_HOST = "157.245.59.181"  // Masukkan IP kamu disini
-
-  checkout scm
-
-  stage("Build"){
-    docker.image('composer:2').inside('-u root') {
-      sh 'rm -f composer.lock'
-      sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
-    }
+pipeline {
+  agent any
+  
+  environment {
+    PROD_HOST = "157.245.59.181"  // Ganti sesuai host kamu
   }
-
-  stage("Test") {
-    docker.image('ubuntu').inside('-u root') {
-      sh 'echo "Ini adalah test"'
+  
+  stages {
+    stage('Build') {
+      steps {
+        // build step
+      }
     }
-  }
-
-  stage("Deploy") {
-    docker.image('agung3wi/alpine-rsync:1.1').inside('-u root') {
-      sshagent (credentials: ['github-ssh-naga']) {
-        sh '''
-          mkdir -p ~/.ssh
-          ssh-keyscan -H $PROD_HOST >> ~/.ssh/known_hosts
-          rsync -rav --delete ./laravel/ ubuntu@$PROD_HOST:/home/ubuntu/prod.kelasdevops.xyz/ --exclude=.env --exclude=storage --exclude=.git
-        '''
+    
+    stage('Deploy') {
+      steps {
+        script {
+          docker.image('agung3wi/alpine-rsync:1.1').inside('-u root') {
+            sshagent (credentials: ['github-ssh-naga']) {
+              sh 'mkdir -p ~/.ssh'
+              sh 'ssh-keyscan -H "$PROD_HOST" >> ~/.ssh/known_hosts'
+              sh "rsync -rav --delete ./laravel/ ubuntu@$PROD_HOST:/home/ubuntu/prod.kelasdevops.xyz/ --exclude=.env --exclude=storage --exclude=.git"
+            }
+          }
+        }
       }
     }
   }
