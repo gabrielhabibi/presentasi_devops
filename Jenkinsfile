@@ -1,12 +1,10 @@
 node {
   checkout scm
 
-  stage("Build") {
-    dir('laravel') {
-      docker.image('composer:2').inside('-u root') {
-        sh 'rm -f composer.lock'
-        sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
-      }
+  stage("Build"){
+    docker.image('composer:2').inside('-u root') {
+      sh 'rm -f composer.lock'
+      sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
     }
   }
 
@@ -24,7 +22,7 @@ node {
             mkdir -p ~/.ssh
             ssh-keyscan -H "$PROD_HOST" >> ~/.ssh/known_hosts
             rsync -rav --delete ./laravel/ root@$PROD_HOST:/root/prod.kelasdevops.xyz/ \
-              --exclude=.env --exclude=storage --exclude=.git --exclude=vendor
+              --exclude=.env --exclude=storage --exclude=.git
           '''
         }
       }
