@@ -2,8 +2,7 @@ node {
     checkout scm
 
     stage("Build") {
-        // Pakai image composer official PHP 8.1 (sudah ada composer)
-        docker.image('composer:2.5-php8.1').inside('-u root') {
+        docker.image('composer:2.5-php8.2').inside('-u root') {
             sh 'rm -f composer.lock'
             sh 'composer install'
         }
