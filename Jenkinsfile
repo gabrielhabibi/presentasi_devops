@@ -1,22 +1,20 @@
 node {
     checkout scm
 
-    // Build Laravel Project
     stage("Build") {
-        docker.image('shippingdocker/php-composer:7.4').inside('-u root') {
+        // Pakai image composer official PHP 8.1 (sudah ada composer)
+        docker.image('composer:2.5-php8.1').inside('-u root') {
             sh 'rm -f composer.lock'
             sh 'composer install'
         }
     }
 
-    // Testing dummy
     stage("Testing") {
         docker.image('ubuntu').inside('-u root') {
             sh 'echo "Ini adalah test"'
         }
     }
 
-    // Deploy ke production
     stage("Deploy to Production") {
         docker.image('agung3wi/alpine-rsync:1.1').inside('-u root') {
             sshagent (credentials: ['github-ssh-naga']) {
