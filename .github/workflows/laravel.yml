@@ -53,3 +53,16 @@ jobs:
           DB_USERNAME: root
           DB_PASSWORD: root
         run: php artisan migrate --force && php artisan test
+      - name: Deploy to VPS via SSH
+        if: success() # hanya deploy kalau test berhasil
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: 68.183.180.47
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /var/www/laravel-app # ganti dengan direktori kamu
+            git pull origin main
+            docker-compose down
+            docker-compose up -d --build
